@@ -1,38 +1,37 @@
-# High-Load Event Processor (PHP + Swoole + Redis + PostgreSQL)
+# 🚀 High-Load Event Processor (PHP + Swoole + Redis + PostgreSQL)
 
-### 🚀 Senior PHP Showcase Project
-A production-ready microservice architecture designed to handle high-frequency analytical events with guaranteed delivery, rate limiting, and efficient data persistence — now with a **real-time React monitoring dashboard**.
+### Senior PHP Showcase Project
+A production-ready microservice architecture designed to handle high-frequency analytical events with guaranteed delivery, rate limiting, and efficient data persistence — featuring a **real-time monitoring dashboard**.
 
 ---
 
 ## 🏗 Architecture Overview
-This project demonstrates a classic **Event-Driven Architecture** to solve common high-load challenges:
-*   **Traffic Spike Protection:** Uses Redis as a buffer between the API Gateway and the Database.
-*   **Scalability:** The Gateway and Consumer can be scaled independently as separate Docker containers.
-*   **Reliability:** Implements manual Acknowledgments (ack/nack) to ensure zero data loss during processing.
-*   **Flexible Schema:** Leverages PostgreSQL JSONB for storing unstructured analytical payloads while maintaining SQL performance.
+This project demonstrates **Event-Driven Architecture** (EDA) patterns to solve common high-load challenges:
+*   **Traffic Spike Protection:** Redis acts as a high-speed buffer (Message Broker) between the API Gateway and the Database.
+*   **Asynchronous Processing:** A dedicated Consumer process handles DB persistence, decoupling ingestion from storage.
+*   **Reliability:** Manual Acknowledgment (ack/nack) strategy ensures zero data loss during processing.
+*   **Persistence:** PostgreSQL JSONB for flexible analytical payloads with indexing for SQL performance.
 
 ---
 
 ## 🛠 Tech Stack
-*   **Backend:** PHP Swoole
-*   **Message Broker:** Redis
-*   **Database:** PostgreSQL (PDO)
-*   **Monitoring Dashboard:** React (real-time via Server-Sent Events)
+*   **Backend:** PHP 8.3 + **Swoole** (High-performance Coroutine-based Server)
+*   **Message Broker:** **Redis** (List-based Queue)
+*   **Database:** **PostgreSQL** (with JSONB support)
+*   **Monitoring:** Real-time Dashboard (HTML5 + Chart.js via specialized Monitor Service)
 *   **Infrastructure:** Docker, Docker Compose
-*   **Caching/Rate Limiting:** Redis
+*   **Load Testing:** Artillery
 
 ---
 
 ## 💎 Key Engineering Features
 
-*   **Distributed Rate Limiting:** Implemented via **Redis** and `ThrottlerGuard` to prevent API abuse and ensure system stability across multiple service instances.
-*   **Event-Driven Architecture:** Decoupled API Gateway from the Database using **Redis**, allowing the system to handle massive traffic spikes without data loss.
-*   **Manual RMQ Acknowledgments:** Configured manual `ack/nack` strategy to guarantee that messages are only removed from the queue after successful DB persistence.
-*   **PostgreSQL JSONB Optimization:** Specialized schema using `jsonb` for analytical payloads, combining the flexibility of NoSQL with the reliability of SQL.
-*   **Strict Type Safety:** 100% TypeScript coverage with automated DTO validation via `class-validator` and `ValidationPipe`.
-*   **Resilient Infrastructure:** Multi-stage Docker builds and automated health checks to ensure reliable service orchestration.
-*   **Real-Time React Dashboard:** Live monitoring of  PostgreSQL, and Application performance via **Server-Sent Events (SSE)** — with browser-triggered load tests.
+*   **Swoole Coroutine Connection Pooling:** Implemented custom connection pools for Redis and PostgreSQL. This eliminates TCP handshake overhead and significantly increases throughput by reusing established connections across coroutines.
+*   **Non-Blocking I/O:** Leverages **Swoole Coroutines** for all network operations, allowing thousands of concurrent connections with minimal memory footprint.
+*   **Zero-Loss Pipeline:** Implements a strict "Process then Ack" strategy. Messages are only removed from the Redis buffer after a successful PostgreSQL `COMMIT`.
+*   **Isolated Monitoring:** A dedicated **Monitor Microservice** (running as an independent Swoole process) ensures system visibility even when the main API is under 100% CPU stress.
+*   **Real-time RPS Analytics:** The dashboard calculates **Requests Per Second (RPS)** on the client-side by delta-tracking Redis counters, providing precise performance metrics during tests.
+*   **Distributed Rate Limiting:** Built-in protection using Redis-based sliding windows to maintain stability across multiple API instances.
 
 ---
 
@@ -44,74 +43,55 @@ This project demonstrates a classic **Event-Driven Architecture** to solve commo
 ### Installation & Launch
 ```bash
 # 1. Clone the repository
-git clone https://github.com/roman-shneer/high-load-event-processor
+git clone https://github.com
 cd high-load-event-processor
 
-# 2. Spin up the entire infrastructure
+# 2. Start the infrastructure
 docker-compose up --build
 ```
 
 ### Access Points
 
+
 | Service | URL |
 |---------|-----|
-| **API Gateway** | http://127.0.0.1:8000 |
-| **PostgreSQL** | port 5432 (DBeaver/pgAdmin) |
+| **API Gateway** | `http://127.0.0.1:9501` |
+| **Real-time Dashboard** | `http://127.0.0.1:9502` |
+| **PostgreSQL** | `localhost:5432` (user: `user`, pass: `pass`) |
 
 ---
 
-## 🧪 Testing the Pipeline
+## 🧪 Testing & Performance
 
-Send a Tracking Event
-
+### Send a Tracking Event
 ```bash
-curl -X POST http://127.0.0.1:8000 \
+curl -X POST http://127.0.0 \
      -H "Content-Type: application/json" \
      -d '{
        "sessionId": "550e8400-e29b-41d4-a716-446655440000",
        "eventType": "product_view",
-       "payload": { "productId": 123, "price": 99.99 },
-       "timestamp": "2024-05-20T10:00:00Z"
+       "payload": { "productId": 123, "price": 99.99 }
      }'
 ```
 
-## 📊 Monitoring Dashboard
-
-A real-time dashboard built with React that streams live metrics from the NestJS backend via **Server-Sent Events (SSE)** — a single persistent HTTP connection that pushes updates every second without polling overhead.
-
-**Live Charts:**
-*   **Redis Performance** — messages/sec throughput in real-time
-*   **PostgreSQL Performance** — DB write speed and queue depth
-*   **Application Performance** — end-to-end latency across the pipeline
-
-**Load Testing Controls (browser-triggered):**
-*   **Insert 1M** — inserts 1,000,000 events to stress-test the pipeline
-*   **Stress Test** — simulates high-concurrency traffic spikes
-*   Live status indicator shows test progress in real-time
-
----
-
-## Performance test
-
+### Run Stress Test (Artillery)
+```bash
+# Performance suite (RPS ramp-up)
 artillery run performance/main.yml
 
-<img width="946" height="795" alt="image" src="https://github.com/user-attachments/assets/62b8c5f5-bf08-40d2-b12d-d7935a61f446" />
-
-
+# 1M Events insertion test
 artillery run performance/insert1m.yml
-
-<img width="839" height="792" alt="image" src="https://github.com/user-attachments/assets/e5d57635-75fa-4219-bf74-fa24fdafa79e" />
-
+```
 
 ---
 
-### Monitoring
-
-Postgres: Connect via DBeaver/pgAdmin on port 5432
-
+## 📊 Real-Time Monitoring
+The dashboard (accessible at `:9502`) streams metrics directly from Redis:
+*   **Redis Throughput** — Live Events per second (blue line)
+*   **DB Persistence Rate** — PostgreSQL writes per second (green line)
+*   **System Health** — Memory usage and connection pool status
 
 ---
 
-## License
-
+## 📄 License
 MIT License
