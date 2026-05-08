@@ -1,0 +1,49 @@
+services:
+  app:
+    build: .
+    environment:
+      REDIS_HOST: high_load_redis
+      REDIS_PORT: 6379
+    ports:
+      - "8000:8000"
+    depends_on:
+      - redis
+    
+
+  worker:
+    build: .
+    command: ["php", "worker.php"]
+    environment:
+      POSTGRES_HOST: high_load_db
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: pass
+      POSTGRES_DB: analytics_db
+      POSTGRES_PORT: 5432
+      REDIS_HOST: high_load_redis
+      REDIS_PORT: 6379
+    depends_on:
+      - redis
+      - postgres
+    restart: always
+
+  postgres:
+    image: postgres:15-alpine
+    container_name: high_load_db
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: pass
+      POSTGRES_DB: analytics_db
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    ports:
+      - "5432:5432"
+
+  redis:
+    image: redis:7-alpine
+    container_name: high_load_redis
+    ports:
+      - "6379:6379"
+
+volumes:
+  pgdata:

@@ -1,0 +1,27 @@
+config:
+  target: "http://127.0.0.1:8000"
+  http:    
+    pool: 100 
+    timeout: 10
+  phases:    
+    - duration: 1
+      arrivalCount: 1000000
+      name: "Send 1M events"  
+  payload:
+    path: "./data/test-data.csv"
+    fields:
+      - "sessionId"
+    order: cyclic
+scenarios:
+  - name: "Send analytical event"
+    flow:
+      - post:
+          url: "/"          
+          headers:
+            Connection: "keep-alive"
+          json:
+            type: "load_test_event"   # Это поле 'type' из твоего контроллера
+            payload:                 # Это поле 'payload'
+              sessionId: "{{ sessionId }}"
+              browser: "Chrome"
+              performance: "tested"
