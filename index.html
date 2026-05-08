@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Redis/DB Monitor</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.1/dist/chart.umd.min.js"></script>
+</head>
+<body>
+    <div style="width: 800px; margin: 0 auto;">
+        <canvas id="redisChart"></canvas>
+    </div>
+
+    <script>
+        const ctx = document.getElementById('redisChart').getContext('2d');
+        const chart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: [],
+                datasets: [
+                    { label: 'Events RPS (Redis)', data: [], borderColor: 'blue', tension: 0.1 },
+                    { label: 'DB Writes RPS (Postgres)', data: [], borderColor: 'green', tension: 0.1 }
+                ]
+            },
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: { precision: 0 }
+                    }
+                },
+                animation: false 
+            }
+        });
+
+        
+        let lastEventsTotal = null; 
+        let lastDbTotal = null;
+        let lastTimestamp = null;
+        let isFetching = false;
+
+        function updateChart() {
+            if (isFetching) return; 
+            isFetching = true;
+
+            fetch('/api/status')
+                .then(response => response.json())
+                .then(data => {
+                    const now = Date.now();
+
+               
+                    if (lastEventsTotal === null) {
+                        lastEventsTotal = data.events_total;
+                        lastDbTotal = data.db_total;
+                        lastTimestamp = now;
+                        return; 
+                    }
+
+                    const deltaTime = (now - lastTimestamp) / 1000;
+                    if (deltaTime <= 0) return;
+
+          
+                    const eventsRps = Math.max(0, (data.events_total - lastEventsTotal) / deltaTime);
+                    const dbRps = Math.max(0, (data.db_total - lastDbTotal) / deltaTime);
+
+                   
+                    lastEventsTotal = data.events_total;
+                    lastDbTotal = data.db_total;
+                    lastTimestamp = now;
+
+                   
+                    chart.data.labels.push(data.timestamp);
+                    chart.data.datasets[0].data.push(Math.round(eventsRps));
+                    chart.data.datasets[1].data.push(Math.round(dbRps));
+
+                    if (chart.data.labels.length > 30) {
+                        chart.data.labels.shift();
+                        chart.data.datasets[0].data.shift();
+                        chart.data.datasets[1].data.shift();
+                    }
+
+                    chart.update('none');
+                })
+                .catch(error => console.error("Monitoring error:", error))
+                .finally(() => { isFetching = false; });
+        }
+
+        setInterval(updateChart, 1000);
+    </script>
+</body>
+</html>

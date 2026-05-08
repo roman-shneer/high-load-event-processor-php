@@ -36,8 +36,9 @@ try {
             // 1. Write to PostgreSQL
             $stmt = $pdo->prepare("INSERT INTO events (data, created_at) VALUES (?, NOW())");
             $stmt->execute([$payload]);
-
+        
             // 2. Additional processing (e.g., logging)
+            $redis->incr('stats:db_count');
         }
     }
 } catch (\Throwable $e) {

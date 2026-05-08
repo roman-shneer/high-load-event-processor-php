@@ -27,12 +27,12 @@ This project demonstrates a classic **Event-Driven Architecture** to solve commo
 ## 💎 Key Engineering Features
 
 *   **Distributed Rate Limiting:** Implemented via **Redis** and `ThrottlerGuard` to prevent API abuse and ensure system stability across multiple service instances.
-*   **Event-Driven Architecture:** Decoupled API Gateway from the Database using **RabbitMQ**, allowing the system to handle massive traffic spikes without data loss.
+*   **Event-Driven Architecture:** Decoupled API Gateway from the Database using **Redis**, allowing the system to handle massive traffic spikes without data loss.
 *   **Manual RMQ Acknowledgments:** Configured manual `ack/nack` strategy to guarantee that messages are only removed from the queue after successful DB persistence.
 *   **PostgreSQL JSONB Optimization:** Specialized schema using `jsonb` for analytical payloads, combining the flexibility of NoSQL with the reliability of SQL.
 *   **Strict Type Safety:** 100% TypeScript coverage with automated DTO validation via `class-validator` and `ValidationPipe`.
 *   **Resilient Infrastructure:** Multi-stage Docker builds and automated health checks to ensure reliable service orchestration.
-*   **Real-Time React Dashboard:** Live monitoring of RabbitMQ, PostgreSQL, and Application performance via **Server-Sent Events (SSE)** — with browser-triggered load tests.
+*   **Real-Time React Dashboard:** Live monitoring of  PostgreSQL, and Application performance via **Server-Sent Events (SSE)** — with browser-triggered load tests.
 
 ---
 
@@ -84,7 +84,7 @@ curl -X POST http://127.0.0.1:8000 \
 A real-time dashboard built with React that streams live metrics from the NestJS backend via **Server-Sent Events (SSE)** — a single persistent HTTP connection that pushes updates every second without polling overhead.
 
 **Live Charts:**
-*   **RabbitMQ Performance** — messages/sec throughput in real-time
+*   **Redis Performance** — messages/sec throughput in real-time
 *   **PostgreSQL Performance** — DB write speed and queue depth
 *   **Application Performance** — end-to-end latency across the pipeline
 

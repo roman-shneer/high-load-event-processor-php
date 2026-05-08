@@ -26,6 +26,18 @@ services:
       - postgres
     restart: always
 
+  monitor:
+    build: .
+    command: ["php", "monitor.php"]
+    environment:      
+      REDIS_HOST: high_load_redis
+      REDIS_PORT: 6379
+    ports:
+      - "80:9502"
+    depends_on:
+      - redis  
+    restart: always
+
   postgres:
     image: postgres:15-alpine
     container_name: high_load_db

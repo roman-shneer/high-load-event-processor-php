@@ -6,6 +6,8 @@ WORKDIR /var/www
 
 COPY server.php .
 COPY worker.php .
+COPY monitor.php .
+COPY index.html .
 COPY init.sql .
 
 CMD ["php", "server.php"]

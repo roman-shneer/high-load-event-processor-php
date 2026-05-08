@@ -27,14 +27,20 @@ $server->on('WorkerStart', function ($server, $workerId) {
 
 $server->on("Request", function (Request $request, Response $response) {
     global $pool;
-
+    
     try {
         $redis = $pool->get(); // Get a ready connection
+
         $redis->lPush('events', $request->rawContent() ?: 'empty');
+        $redis->incr('stats:events_count'); //statistics
         $pool->put($redis);    // Return to the pool
 
         $response->header("Content-Type", "application/json");
         $response->end(json_encode(["status" => "ok"]));
+
+
+
+
     } catch (\Throwable $e) {
         $response->status(500);
         $response->end(json_encode(["error" => "Redis busy"]));
