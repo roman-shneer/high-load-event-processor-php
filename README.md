@@ -75,11 +75,7 @@ curl -X POST http://127.0.0.1:8000 \
      }'
 ```
 
-<img width="720" height="464" alt="image" src="https://github.com/user-attachments/assets/c6b324c8-774b-4b47-bada-bd6f882947cc" />
-
----
-
-## 📊 React Monitoring Dashboard
+## 📊 Monitoring Dashboard
 
 A real-time dashboard built with React that streams live metrics from the NestJS backend via **Server-Sent Events (SSE)** — a single persistent HTTP connection that pushes updates every second without polling overhead.
 
@@ -93,19 +89,19 @@ A real-time dashboard built with React that streams live metrics from the NestJS
 *   **Stress Test** — simulates high-concurrency traffic spikes
 *   Live status indicator shows test progress in real-time
 
-<img width="820" height="1094" alt="image" src="https://github.com/user-attachments/assets/949c7f08-6e4e-4664-9f42-d5c9ea3e9707" />
-
 ---
 
 ## Performance test
 
 artillery run performance/main.yml
 
-<img width="834" height="758" alt="image" src="https://github.com/user-attachments/assets/cc6e5580-c2c2-40c6-b3af-e4b0eea53c58" />
+<img width="946" height="795" alt="image" src="https://github.com/user-attachments/assets/62b8c5f5-bf08-40d2-b12d-d7935a61f446" />
+
 
 artillery run performance/insert1m.yml
 
-<img width="818" height="920" alt="image" src="https://github.com/user-attachments/assets/68d5b8f9-15a5-4401-ad4e-44b84dc9b1f8" />
+<img width="839" height="792" alt="image" src="https://github.com/user-attachments/assets/e5d57635-75fa-4219-bf74-fa24fdafa79e" />
+
 
 ---
 
