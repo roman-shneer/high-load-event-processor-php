@@ -44,7 +44,7 @@ This project demonstrates **Event-Driven Architecture** (EDA) patterns to solve 
 ```bash
 # 1. Clone the repository
 git clone https://github.com/roman-shneer/high-load-event-processor-php.git
-cd high-load-event-processor
+cd high-load-event-processor-php
 
 # 2. Start the infrastructure
 docker-compose up --build
