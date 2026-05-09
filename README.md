@@ -1,67 +1,76 @@
-# 🚀 High-Load Event Processor (PHP + Swoole + Redis + PostgreSQL)
+# High-Load Event Processor (PHP + Swoole)
 
-### Senior PHP Showcase Project
-A production-ready microservice architecture designed to handle high-frequency analytical events with guaranteed delivery, rate limiting, and efficient data persistence — featuring a **real-time monitoring dashboard**.
+High-performance asynchronous system for ingesting and processing events with zero data loss. Built using PHP, Swoole, Redis (as a buffer), and PostgreSQL.
 
----
+## 🚀 Key Features
 
-## 🏗 Architecture Overview
-This project demonstrates **Event-Driven Architecture** (EDA) patterns to solve common high-load challenges:
-*   **Traffic Spike Protection:** Redis acts as a high-speed buffer (Message Broker) between the API Gateway and the Database.
-*   **Asynchronous Processing:** A dedicated Consumer process handles DB persistence, decoupling ingestion from storage.
-*   **Reliability:** Manual Acknowledgment (ack/nack) strategy ensures zero data loss during processing.
-*   **Persistence:** PostgreSQL JSONB for flexible analytical payloads with indexing for SQL performance.
-
----
-
-## 🛠 Tech Stack
-*   **Backend:** PHP 8.4 + **Swoole** (High-performance Coroutine-based Server)
-*   **Message Broker:** **Redis** (List-based Queue)
-*   **Database:** **PostgreSQL** (with JSONB support)
-*   **Monitoring:** Real-time Dashboard (HTML5 + Chart.js via specialized Monitor Service)
-*   **Infrastructure:** Docker, Docker Compose
-*   **Load Testing:** Artillery
+*   **Asynchronous Ingestion:** Built on Swoole HTTP server with coroutines for non-blocking I/O.
+*   **Persistent Buffering:** Uses Redis for reliable queuing between the API and workers.
+*   **Worker Pool:** Efficient background workers that process events and persist them to PostgreSQL.
+*   **Database Connection Pooling:** Optimized SQL execution with Swoole-native connection pooling.
+*   **Scalability:** Separate services for Ingestion (Server), Processing (Worker), and Monitoring.
+*   **Performance Monitoring:** Real-time metrics via a dedicated monitoring microservice.
 
 ---
 
-## 💎 Key Engineering Features
+## 🏗 System Architecture
 
-*   **Swoole Coroutine Connection Pooling:** Implemented custom connection pools for Redis and PostgreSQL. This eliminates TCP handshake overhead and significantly increases throughput by reusing established connections across coroutines.
-*   **Non-Blocking I/O:** Leverages **Swoole Coroutines** for all network operations, allowing thousands of concurrent connections with minimal memory footprint.
-*   **Zero-Loss Pipeline:** Implements a strict "Process then Ack" strategy. Messages are only removed from the Redis buffer after a successful PostgreSQL `COMMIT`.
-*   **Isolated Monitoring:** A dedicated **Monitor Microservice** (running as an independent Swoole process) ensures system visibility even when the main API is under 100% CPU stress.
-*   **Real-time RPS Analytics:** The dashboard calculates **Requests Per Second (RPS)** on the client-side by delta-tracking Redis counters, providing precise performance metrics during tests.
-*   **Distributed Rate Limiting:** Built-in protection using Redis-based sliding windows to maintain stability across multiple API instances.
+1.  **API Gateway (`server.php`):** Swoole HTTP server receives JSON events and pushes them to Redis.
+2.  **Queue (Redis):** Acts as a high-speed buffer to handle traffic spikes.
+3.  **Processors (`worker.php`):** Background consumers that read from Redis and batch-insert into DB.
+4.  **Monitor (`monitor.php`):** Provides insights into queue depth and processing speed.
 
 ---
 
-## 🚦 Getting Started
+## 📂 Project Structure
+
+```text
+├── server.php        # API Gateway (Swoole HTTP Server)
+├── worker.php        # Event Processor (Consumer)
+├── monitor.php       # Real-time Monitoring Service
+├── performance/      # Artillery load testing scenarios
+├── docker-compose.yml
+└── Dockerfile
+```
+
+---
+
+## 🛠 Installation & Launch
 
 ### Prerequisites
 *   Docker & Docker Compose
 
-### Installation & Launch
-```bash
-# 1. Clone the repository
-git clone https://github.com/roman-shneer/high-load-event-processor-php.git
-cd high-load-event-processor-php
+### Step-by-Step Setup
 
-# 2. Start the infrastructure
-docker-compose up --build
-```
+1. **Clone the repository:**
+   ```bash
+   git clone https://github.com
+   cd high-load-event-processor-php
+   ```
 
-### Access Points
+2. **Spin up the infrastructure:**
+   ```bash
+   docker-compose up --build -d
+   ```
 
-
-| Service | URL |
-|---------|-----|
-| **API Gateway** | `http://127.0.0.1:8000` |
-| **Real-time Dashboard** | `http://127.0.0.1:80` |
-| **PostgreSQL** | `localhost:5432` (user: `user`, pass: `pass`) |
+3. **Verify the services:**
+   The system will automatically start the API, Worker, Redis, and PostgreSQL.
 
 ---
 
-## 🧪 Testing & Performance
+## 🔗 Access Points (Host Machine)
+
+
+| Service            | Address                  | Credentials / Info          |
+|--------------------|--------------------------|-----------------------------|
+| **API Gateway**    | `http://127.0.0.1:8000`  | POST `/event`               |
+| **Monitor**        | `http://127.0.0.1:8001`  | System Metrics              |
+| **PostgreSQL**     | `localhost:5432`         | `user: user`, `pass: pass`  |
+| **Redis**          | `localhost:6379`         | Event Queue Buffer          |
+
+---
+
+## 📈 Performance & Load Testing
 
 ### Send a Tracking Event
 ```bash
@@ -73,24 +82,36 @@ curl -X POST http://127.0.0.1:8000 \
        "payload": { "productId": 123, "price": 99.99 }
      }'
 ```
+The system is tested using **Artillery** to ensure low latency and high throughput.
 
 ### Run Stress Test (Artillery)
 ```bash
+# Ensure you have artillery installed: npm install -g artillery
 # Performance suite (RPS ramp-up)
 artillery run performance/main.yml
+```
+<img width="813" height="759" alt="image" src="https://github.com/user-attachments/assets/17c1e1a8-a19b-4244-8bc4-3d1126504bc4" />
 
+
+#### Insert 1 million events (Artillery)
+```bash
+# Ensure you have artillery installed: npm install -g artillery
 # 1M Events insertion test
 artillery run performance/insert1m.yml
 ```
-
-#### artillery run performance/main.yml
-<img width="813" height="759" alt="image" src="https://github.com/user-attachments/assets/17c1e1a8-a19b-4244-8bc4-3d1126504bc4" />
-
-#### artillery run performance/insert1m.yml
 <img width="837" height="751" alt="image" src="https://github.com/user-attachments/assets/bab0491f-a892-43a8-bf16-82d6be926127" />
 
+**Results:**
+*   **Throughput:** 10,000+ requests per second (depends on hardware).
+*   **Reliability:** 0% packet loss due to asynchronous coroutine-based Redis pushing.
 
 ---
+## 🛠 Technical Implementation Details
+
+*   **Swoole Coroutines:** Used for non-blocking communication with Redis and Postgres.
+*   **Connection Pooling:** Implemented to prevent "Too many connections" errors under high load.
+*   **Graceful Shutdown:** Workers are designed to finish processing the current batch before stopping.
+
 
 ## 📊 Real-Time Monitoring
 The dashboard (accessible at `:80`) streams writing metrics:
