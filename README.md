@@ -87,6 +87,7 @@ artillery run performance/insert1m.yml
 <img width="813" height="759" alt="image" src="https://github.com/user-attachments/assets/17c1e1a8-a19b-4244-8bc4-3d1126504bc4" />
 
 #### artillery run performance/insert1m.yml
+<img width="837" height="751" alt="image" src="https://github.com/user-attachments/assets/bab0491f-a892-43a8-bf16-82d6be926127" />
 
 
 ---
