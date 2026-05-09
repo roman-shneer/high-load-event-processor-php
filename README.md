@@ -15,7 +15,7 @@ This project demonstrates **Event-Driven Architecture** (EDA) patterns to solve 
 ---
 
 ## 🛠 Tech Stack
-*   **Backend:** PHP 8.3 + **Swoole** (High-performance Coroutine-based Server)
+*   **Backend:** PHP 8.4 + **Swoole** (High-performance Coroutine-based Server)
 *   **Message Broker:** **Redis** (List-based Queue)
 *   **Database:** **PostgreSQL** (with JSONB support)
 *   **Monitoring:** Real-time Dashboard (HTML5 + Chart.js via specialized Monitor Service)
@@ -43,7 +43,7 @@ This project demonstrates **Event-Driven Architecture** (EDA) patterns to solve 
 ### Installation & Launch
 ```bash
 # 1. Clone the repository
-git clone https://github.com
+git clone https://github.com/roman-shneer/high-load-event-processor-php.git
 cd high-load-event-processor
 
 # 2. Start the infrastructure
@@ -55,8 +55,8 @@ docker-compose up --build
 
 | Service | URL |
 |---------|-----|
-| **API Gateway** | `http://127.0.0.1:9501` |
-| **Real-time Dashboard** | `http://127.0.0.1:9502` |
+| **API Gateway** | `http://127.0.0.1:8000` |
+| **Real-time Dashboard** | `http://127.0.0.1:80` |
 | **PostgreSQL** | `localhost:5432` (user: `user`, pass: `pass`) |
 
 ---
@@ -65,7 +65,7 @@ docker-compose up --build
 
 ### Send a Tracking Event
 ```bash
-curl -X POST http://127.0.0 \
+curl -X POST http://127.0.0.1:8000 \
      -H "Content-Type: application/json" \
      -d '{
        "sessionId": "550e8400-e29b-41d4-a716-446655440000",
@@ -83,13 +83,18 @@ artillery run performance/main.yml
 artillery run performance/insert1m.yml
 ```
 
+#### artillery run performance/main.yml
+<img width="813" height="759" alt="image" src="https://github.com/user-attachments/assets/17c1e1a8-a19b-4244-8bc4-3d1126504bc4" />
+
+#### artillery run performance/insert1m.yml
+
+
 ---
 
 ## 📊 Real-Time Monitoring
-The dashboard (accessible at `:9502`) streams metrics directly from Redis:
-*   **Redis Throughput** — Live Events per second (blue line)
-*   **DB Persistence Rate** — PostgreSQL writes per second (green line)
-*   **System Health** — Memory usage and connection pool status
+The dashboard (accessible at `:80`) streams writing metrics:
+*   **Events RPS Redis** — Live Events per second (blue line)
+*   **Events RPS Postgres** — PostgreSQL writes per second (green line)
 
 ---
 
