@@ -1,6 +1,7 @@
 services:
   app:
     build: .
+    container_name: high_load_app
     environment:
       REDIS_HOST: high_load_redis
       REDIS_PORT: 6379
@@ -33,7 +34,7 @@ services:
       REDIS_HOST: high_load_redis
       REDIS_PORT: 6379
     ports:
-      - "80:9502"
+      - "80:80"
     depends_on:
       - redis  
     restart: always

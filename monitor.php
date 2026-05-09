@@ -11,7 +11,7 @@ Swoole\Runtime::enableCoroutine();
 $redisHost = getenv('REDIS_HOST') ?: 'redis';
 $redisPort = getenv('REDIS_PORT') ?: 6379;
 
-$server = new Server("0.0.0.0", 9502);
+$server = new Server("0.0.0.0", 80);
 
 $server->set([
     'worker_num' => 2, // 2 workers are enough for monitoring
